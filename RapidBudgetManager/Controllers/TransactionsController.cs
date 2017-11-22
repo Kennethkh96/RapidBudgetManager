@@ -13,5 +13,22 @@ namespace RapidBudgetManager.Controllers
         {
             return View();
         }
+
+        public ActionResult Details(int id)
+        {
+            ViewBag.id = id;
+            return View();
+        }
+
+        public ActionResult Edit(int id)
+        {
+            ViewBag.id = id;
+            return View();
+        }
+
+        public ActionResult Create()
+        {
+            return View();
+        }
     }
 }

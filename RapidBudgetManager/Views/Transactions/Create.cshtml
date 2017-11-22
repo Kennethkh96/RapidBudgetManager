@@ -1,9 +1,6 @@
-﻿
-@*@{
+﻿@{
     ViewBag.Title = "Create";
 }
-
-<h2>Create</h2>
 
 
 @using (Html.BeginForm())
@@ -14,48 +11,102 @@
         <h4>Transaction</h4>
         <hr />
         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
         <div class="form-group">
-            @Html.Label("Title", htmlAttributes: new { @class = "control-label col-md-2" })
+            <label for="Value" class="control-label col-md-2">Value</label>
             <div class="col-md-10">
-                @Html.EditorFor(model => model.Text, new { htmlAttributes = new { @class = "form-control", @placeholder = "Insert a title" } })
-                @Html.ValidationMessageFor(model => model.Text, "", new { @class = "text-danger" })
-            </div>
-        </div>
-        <div class="form-group">
-            @Html.LabelFor(model => model.Value, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Value, new { htmlAttributes = new { @class = "form-control", @placeholder = "Insert a value" } })
-                @Html.ValidationMessageFor(model => model.Value, "", new { @class = "text-danger" })
-            </div>
-        </div>
-        <div class="form-group">
-            @Html.LabelFor(model => model.Date, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Date, new { htmlAttributes = new { @class = "form-control", @type = "date" } })
-                @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
+                <input type="text" name="Value" class="form-control" />
             </div>
         </div>
 
         <div class="form-group">
-            @Html.LabelFor(model => model.FK_Category, "Category", htmlAttributes: new { @class = "control-label col-md-2" })
+            <label for="Text" class="control-label col-md-2">Text</label>
             <div class="col-md-10">
-                @Html.DropDownList("FK_Category", null, htmlAttributes: new { @class = "form-control", @placeholder = "Please select a product" })
-                @Html.ValidationMessageFor(model => model.FK_Category, "", new { @class = "text-danger" })
+                <input type="text" name="Text" class="form-control" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="Date" class="control-label col-md-2">Date</label>
+            <div class="col-md-10">
+                <input type="date" name="Date" class="form-control" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="FK_Category" class="control-label col-md-2">Category</label>
+            <div class="col-md-10">
+                <select class="form-control" name="FK_Category"></select>
             </div>
         </div>
 
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
+                <input type="submit" value="Save" class="btn btn-default" id="save"/>
             </div>
         </div>
     </div>
 }
 
 <div>
-    @Html.ActionLink("Back to List", "Index")
+    @Html.ActionLink("Back", "Details", new { id = ViewBag.id })
 </div>
 
 @section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-}*@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.0.3/sweetalert2.all.min.js"></script>
+    <script>
+        let socket = io('localhost:3000');
+        socket.emit('GetAllCategories', '');
+
+        socket.on('GetAllCategories', function(res) {
+            res.Result = JSON.parse(res.Result);
+            console.log(JSON.stringify(res, null, 4));
+
+            for (let i = 0; i < res.Result.length; i++)
+            {
+                $('[name="FK_Category"]').append($('<option>', {
+                    value: res.Result[i].Id,
+                    text: res.Result[i].Name
+                }));
+            }
+        });
+
+        $('#save').on('click', function (event) {
+            event.preventDefault();
+
+            let transaction = {
+                Value: $('[name="Value"]').val(),
+                Text: $('[name="Text"]').val(),
+                Date: $('[name="Date"]').val(),
+                FK_Category: $('[name="FK_Category"]').val()
+            }
+
+            if (transaction.Value === ''        ||
+                transaction.Text === ''         ||
+                transaction.Date === ''         ||
+                transaction.FK_Category === ''  ||
+                transaction.FK_Category === null)
+            {
+                swal('Failure', 'All fields are required', 'warning');
+                return false;
+            }
+
+            socket.emit('CreateTransaction', transaction);
+
+            return false;
+        });
+
+        socket.on('CreateTransaction', function(res){
+            if (res.Status === 200)
+            {
+                swal('Success!', 'The transaction has been created', 'success');
+                $('form').trigger('reset');
+            }
+            else
+            {
+                swal('Failure', 'An error has occured, we are very sorry', 'warning');
+            }
+        });
+    </script>
+}
+

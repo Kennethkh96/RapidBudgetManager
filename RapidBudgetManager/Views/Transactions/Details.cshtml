@@ -1,6 +1,4 @@
-﻿@*@model BudgetManagerV2.Models.Transaction
-
-@{
+﻿@{
     ViewBag.Title = "Details";
 }
 
@@ -14,41 +12,85 @@
             @Html.DisplayName("Title")
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Text)
-        </dd>
+        <dd id="title"></dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Value)
+            Value
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Value) DKK
-        </dd>
+        <dd id="value"></dd>
         <dt>
-            @Html.DisplayNameFor(model => model.Date)
+            Date
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Date)
-        </dd>
+        <dd id="date"></dd>
 
         <dt>
             @Html.DisplayName("Category")
         </dt>
 
-        <dd>
-            @Html.DisplayFor(model => model.Category.Name)
-        </dd>
-        <dd>
-            
-            <img src="@Model.ImageURL" />
-        </dd>
+        <dd id="fk_categoryname"></dd>
 
     </dl>
 </div>
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.Id }) |
-    @Html.ActionLink("Delete", "Delete", new { id = Model.Id }) |
-    @Html.ActionLink("Send mail with info", "Mail", new { id = Model.Id, mail = "" }) |
+    @Html.ActionLink("Edit", "Edit", new { id = @ViewBag.id }) |
+    @Html.ActionLink("Delete", "Delete", new { id = @ViewBag.id }) |
+    @*@Html.ActionLink("Send mail with info", "", new { id = @ViewBag.id, mail = "" })*@
+    <a href="" id="sendMail">Send mail with info</a> |
     @Html.ActionLink("Back to List", "Index")
-</p>*@
+</p>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.0.3/sweetalert2.all.min.js"></script>
+    <script>
+        let transaction;
+        let socket = io('localhost:3000');
+        let emailTemplate = 'Transaction Title: [[Text]] Value: [[Value]] Date: [[Date]] CategoryName: [[FK_Category]]';
+
+        socket.emit('GetSingleTransaction', {Id: @ViewBag.id});
+
+        $('#sendMail').on('click', function(event) {
+            event.preventDefault()
+        
+            swal({
+                title: 'Enter email',
+                input: 'email',
+                showCancelButton: true,
+                confirmButtonText: 'Submit',
+                showLoaderOnConfirm: true,
+                preConfirm: function (email) {
+                    return new Promise(function (resolve) {
+                        console.log(JSON.stringify(transaction));
+                        socket.emit('SendMail', {template: emailTemplate, data: transaction, email: email});
+                    });
+                }
+            });
+
+            socket.on('SendMail', function(res) {
+                console.log(JSON.stringify(res, null, 4));
+                if (res.status === 200)
+                    swal('Success!', res.Result, 'success');
+                else
+                    swal.showValidationError('An error occured and the email has not been sent');
+
+            });
+
+
+            return false;
+        });
+
+        socket.on('GetSingleTransaction', function (res) {             
+            transaction = JSON.parse(res.Result)[0];
+            console.log();
+            console.log(JSON.stringify(res, null, 4));
+          
+            if (res.Status === 200)
+            {
+                $('#title').text(transaction.Text);
+                $('#value').text(transaction.Value + " DKK");
+                $('#date').text(transaction.Date);
+                $('#fk_categoryname').text(transaction.FK_Category);
+            }
+        });
+      
+    </script>
+}
