@@ -86,7 +86,13 @@
                 $('#value').text(transaction.Value + " DKK");
                 $('#date').text(transaction.Date.substring(0, 10));
                 $('#fk_categoryname').text(transaction.FK_Category);
+
+                socket.emit('GetImage', transaction);
             }
+        });
+
+        socket.on('GetImage', function(res) {
+            console.log("Get image" + JSON.stringify(res));
         });
       
     </script>
