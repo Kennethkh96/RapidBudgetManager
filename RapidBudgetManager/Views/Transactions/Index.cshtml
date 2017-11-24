@@ -38,16 +38,16 @@
                     '{{Date}}',
                 '</td>',
                 '<td>',
-                    '<a href="Categories/Edit/{{Cat_ID}}">{{Name}}</a>',
+                    //'<a href="Categories/Edit/{{Cat_ID}}">{{Name}}</a>',
+                    '<a href="#!">{{Name}}</a>',
                 '</td>',
             '</tr>'
         ].join('\n');
 
-        let socket = io('localhost:3000');
+        let socket = io('https://herosocketrabbit.herokuapp.com/');
 
         socket.on('GetAllTransactions', function (res) {
             res.Result = JSON.parse(res.Result);
-            console.log(JSON.stringify(res, null, 4));
             if (res.Status === 200)
             {
                 for (let i = 0; i < res.Result.length; i++)

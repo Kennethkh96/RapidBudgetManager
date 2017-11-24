@@ -54,18 +54,15 @@
 @section Scripts {
     <script>
         let transaction;
-        let socket = io('localhost:3000');
+        let socket = io('https://herosocketrabbit.herokuapp.com/');
         socket.emit('GetAllCategories', '');
 
         socket.on('GetSingleTransaction', function (res) {
             transaction = JSON.parse(res.Result)[0];
-            console.log(JSON.stringify(res, null, 4));
-            console.log(JSON.stringify(transaction, null, 4));
             if (res.Status === 200)
             {
                 $('[name="Value"]').val(transaction.Value);
                 $('[name="Text"]').val(transaction.Text);
-                console.log("setting date to: " + transaction.Date.substring(0, 10));
                 $('[name="Date"]').val(transaction.Date.substring(0, 10));
             }
         });

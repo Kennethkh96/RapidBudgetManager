@@ -43,7 +43,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.0.3/sweetalert2.all.min.js"></script>
     <script>
         let transaction;
-        let socket = io('localhost:3000');
+        let socket = io('https://herosocketrabbit.herokuapp.com/');
         let emailTemplate = 'Transaction Title: [[Text]] Value: [[Value]] Date: [[Date]] CategoryName: [[FK_Category]]';
 
         socket.emit('GetSingleTransaction', {Id: @ViewBag.id});
@@ -66,7 +66,6 @@
             });
 
             socket.on('SendMail', function(res) {
-                console.log(JSON.stringify(res, null, 4));
                 if (res.status === 200)
                     swal('Success!', res.Result, 'success');
                 else
@@ -80,14 +79,12 @@
 
         socket.on('GetSingleTransaction', function (res) {             
             transaction = JSON.parse(res.Result)[0];
-            console.log();
-            console.log(JSON.stringify(res, null, 4));
           
             if (res.Status === 200)
             {
                 $('#title').text(transaction.Text);
                 $('#value').text(transaction.Value + " DKK");
-                $('#date').text(transaction.Date);
+                $('#date').text(transaction.Date.substring(0, 10));
                 $('#fk_categoryname').text(transaction.FK_Category);
             }
         });

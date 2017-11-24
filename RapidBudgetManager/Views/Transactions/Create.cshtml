@@ -55,13 +55,11 @@
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/7.0.3/sweetalert2.all.min.js"></script>
     <script>
-        let socket = io('localhost:3000');
+        let socket = io('https://herosocketrabbit.herokuapp.com/');
         socket.emit('GetAllCategories', '');
 
         socket.on('GetAllCategories', function(res) {
             res.Result = JSON.parse(res.Result);
-            console.log(JSON.stringify(res, null, 4));
-
             for (let i = 0; i < res.Result.length; i++)
             {
                 $('[name="FK_Category"]').append($('<option>', {
